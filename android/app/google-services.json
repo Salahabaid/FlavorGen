@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "551162708276",
+    "project_id": "flavorgen-87838",
+    "storage_bucket": "flavorgen-87838.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:551162708276:android:29330285af36fdf742e561",
+        "android_client_info": {
+          "package_name": "com.example.flavorgen"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "551162708276-qv6i31m08h5pkgkkstkocbc7n1p1j03d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.flavorgen",
+            "certificate_hash": "3423d1f2e8987813d62f888e16b87fc58b9717ad"
+          }
+        },
+        {
+          "client_id": "551162708276-j3u6n1mm9sl93pqt4qg1ueg2dmd7tk1r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7ehIxSo8KsUONRcZqD1LVpsrLrRASMYo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "551162708276-j3u6n1mm9sl93pqt4qg1ueg2dmd7tk1r.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "551162708276-g5qoomnd54i5h1gmfi5jn21uvrieg7o8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flavorgen"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
