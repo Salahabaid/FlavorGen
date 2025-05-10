@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flavorgen/screens/Authentification/signin.dart';
 import 'package:flavorgen/screens/Authentification/verificationcode.dart';
 import 'package:flavorgen/services/auth_service.dart';
+import 'package:flavorgen/screens/HomeScreen/homescreen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -284,28 +285,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             : () async {
                               setState(() => _isLoading = true);
                               try {
-                                final user = await _signInWithGoogle();
+                                final user =
+                                    await _authService.signInWithGoogle();
                                 if (user == null) {
                                   _showSnackBar(
                                     'Connexion avec Google annulée',
                                   );
-                                } else if (!user.emailVerified) {
+                                } else {
+                                  // Ici, tu peux vérifier si c'est un nouvel utilisateur et compléter son profil si besoin
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                      builder:
-                                          (context) => EmailVerificationScreen(
-                                            email: user.email!,
-                                          ),
+                                      builder: (context) => const HomeScreen(),
                                     ),
                                   );
                                 }
                               } catch (e) {
-                                _showSnackBar('Erreur : ${e.toString()}');
+                                _showSnackBar(
+                                  'Erreur lors de la connexion avec Google: ${e.toString()}',
+                                );
                               } finally {
-                                if (mounted) {
-                                  setState(() => _isLoading = false);
-                                }
+                                if (mounted) setState(() => _isLoading = false);
                               }
                             },
                     icon: const Icon(Icons.g_mobiledata, size: 28),
