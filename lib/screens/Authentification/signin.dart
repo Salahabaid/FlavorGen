@@ -74,34 +74,22 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
-  Future<User?> _signInWithGoogle() async {
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        // L'utilisateur a annulé la connexion
-        return null;
-      }
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithCredential(credential);
-
-      if (mounted) {
+      final user = await _authService.signInWithGoogle();
+      if (user == null) {
+        _showSnackBar('Connexion avec Google annulée');
+      } else {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
       }
-
-      return userCredential.user;
     } catch (e) {
-      throw Exception('Error connecting to Google : $e');
+      _showSnackBar('Erreur lors de la connexion avec Google: ${e.toString()}');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -264,36 +252,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton.icon(
-                    onPressed:
-                        _isLoading
-                            ? null
-                            : () async {
-                              setState(() => _isLoading = true);
-                              try {
-                                final user = await _signInWithGoogle();
-                                if (user == null) {
-                                  _showSnackBar(
-                                    'Connexion avec Google annulée',
-                                  );
-                                } else if (!user.emailVerified) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => EmailVerificationScreen(
-                                            email: user.email!,
-                                          ),
-                                    ),
-                                  );
-                                }
-                              } catch (e) {
-                                _showSnackBar('Erreur : ${e.toString()}');
-                              } finally {
-                                if (mounted) {
-                                  setState(() => _isLoading = false);
-                                }
-                              }
-                            },
+                    onPressed: _isLoading ? null : _handleGoogleSignIn,
                     icon: const Icon(Icons.g_mobiledata, size: 28),
                     label: const Text(
                       'Google',

@@ -111,13 +111,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   // AJOUT : Fonction pour SignUp with Google
-  Future<User?> _signInWithGoogle() async {
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
     try {
       final user = await _authService.signInWithGoogle();
-      return user;
+      if (user == null) {
+        _showSnackBar('Connexion avec Google annulée');
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
     } catch (e) {
       _showSnackBar('Erreur lors de la connexion avec Google: ${e.toString()}');
-      return null;
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -279,35 +288,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton.icon(
-                    onPressed:
-                        _isLoading
-                            ? null
-                            : () async {
-                              setState(() => _isLoading = true);
-                              try {
-                                final user =
-                                    await _authService.signInWithGoogle();
-                                if (user == null) {
-                                  _showSnackBar(
-                                    'Connexion avec Google annulée',
-                                  );
-                                } else {
-                                  // Ici, tu peux vérifier si c'est un nouvel utilisateur et compléter son profil si besoin
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const HomeScreen(),
-                                    ),
-                                  );
-                                }
-                              } catch (e) {
-                                _showSnackBar(
-                                  'Erreur lors de la connexion avec Google: ${e.toString()}',
-                                );
-                              } finally {
-                                if (mounted) setState(() => _isLoading = false);
-                              }
-                            },
+                    onPressed: _isLoading ? null : _handleGoogleSignIn,
                     icon: const Icon(Icons.g_mobiledata, size: 28),
                     label: const Text(
                       'Google',

@@ -88,7 +88,7 @@ class AuthService {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        return null;
+        return null; // L'utilisateur a annulé
       }
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
