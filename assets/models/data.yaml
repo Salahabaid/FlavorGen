@@ -1,0 +1,28 @@
+train: C:/Users/hp/Desktop/flavorgen/assets/models/train/images
+val: C:/Users/hp/Desktop/flavorgen/assets/models/valid/images
+test: C:/Users/hp/Desktop/flavorgen/assets/models/test/images
+
+nc: 15
+names:
+  - apple
+  - banana
+  - bell_pepper
+  - broccoli
+  - carrot
+  - chicken
+  - cucumber
+  - egg
+  - garlic
+  - lemon
+  - mushroom
+  - onion
+  - orange
+  - potato
+  - tomato
+
+roboflow:
+  workspace: flavorgen
+  project: my-first-project-ilgib
+  version: 3
+  license: Private
+  url: https://app.roboflow.com/flavorgen/my-first-project-ilgib/3

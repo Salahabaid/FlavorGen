@@ -20,6 +20,11 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    aaptOptions {
+        noCompress("tflite")
+        noCompress("lite")
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.flavorgen"

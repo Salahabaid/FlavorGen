@@ -11,7 +11,6 @@ class AuthService {
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
 
-      // Envoi automatique de l'email de vérification après l'inscription
       await userCredential.user!.sendEmailVerification();
 
       return userCredential.user;
@@ -55,7 +54,7 @@ class AuthService {
     }
   }
 
-  // Inscription avec Google avec journaux de débogage
+  // Inscription avec Google
   Future<User?> signUpWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -73,7 +72,6 @@ class AuthService {
         credential,
       );
 
-      // Si c'est une nouvelle inscription, envoyer la vérification
       if (userCredential.additionalUserInfo?.isNewUser ?? false) {
         await userCredential.user!.sendEmailVerification();
       }
@@ -90,7 +88,7 @@ class AuthService {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        return null; // L'utilisateur a annulé la connexion
+        return null;
       }
 
       final GoogleSignInAuthentication googleAuth =
@@ -114,5 +112,23 @@ class AuthService {
   // Déconnexion
   Future<void> signOut() async {
     await _auth.signOut();
+  }
+
+  // ✅ Réinitialisation du mot de passe
+  Future<void> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      print('Email de réinitialisation envoyé');
+    } catch (e) {
+      print('Erreur lors de la réinitialisation du mot de passe : $e');
+      rethrow;
+    }
+  }
+
+  Future<void> sendEmailVerification() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    }
   }
 }

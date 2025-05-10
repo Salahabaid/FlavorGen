@@ -6,8 +6,7 @@ import 'dart:async';
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
 
-  const EmailVerificationScreen({Key? key, required this.email})
-    : super(key: key);
+  const EmailVerificationScreen({super.key, required this.email});
 
   @override
   State<EmailVerificationScreen> createState() =>
@@ -39,7 +38,28 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => SignInPage()),
+      MaterialPageRoute(builder: (context) => const SignInScreen()),
+    );
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isError ? Icons.error_outline : Icons.check_circle_outline,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: isError ? Colors.redAccent : const Color(0xFF1FCC79),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(10),
+      ),
     );
   }
 
@@ -62,7 +82,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               children: [
                 const SizedBox(height: 40),
                 const Text(
-                  'Vérifiez votre email',
+                  'Check your email',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -71,7 +91,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Nous avons envoyé un lien de vérification à ${widget.email}',
+                  'We have sent a verification link to ${widget.email}',
                   style: const TextStyle(
                     fontSize: 16,
                     color: Color(0xFF9FA5C0),
@@ -86,45 +106,54 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 else
                   Column(
                     children: [
-                      ElevatedButton(
-                        onPressed: () async {
-                          try {
-                            await AuthService().sendVerificationEmail();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Email de vérification renvoyé !',
-                                ),
-                              ),
-                            );
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Erreur: ${e.toString()}'),
-                              ),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1FCC79),
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            setState(() => _isLoading = true);
+                            try {
+                              await AuthService().sendVerificationEmail();
+                              _showSnackBar('Verification email resent !');
+                            } catch (e) {
+                              _showSnackBar(
+                                'Error : ${e.toString()}',
+                                isError: true,
+                              );
+                            } finally {
+                              if (mounted) {
+                                setState(() => _isLoading = false);
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1FCC79),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            elevation: 0,
                           ),
-                        ),
-                        child: const Text(
-                          'Renvoyer l\'email',
-                          style: TextStyle(fontSize: 16),
+                          child: const Text(
+                            'Resend Email',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
                       TextButton(
                         onPressed: _redirectToLogin,
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF1FCC79),
+                        ),
                         child: const Text(
-                          'J\'ai déjà vérifié mon email',
+                          'I have already verified my email',
                           style: TextStyle(
-                            color: Color(0xFF1FCC79),
                             fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
                         ),
                       ),

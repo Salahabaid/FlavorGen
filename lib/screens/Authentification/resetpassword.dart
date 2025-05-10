@@ -1,236 +1,165 @@
 import 'package:flutter/material.dart';
-import 'package:flavorgen/screens/Authentification/signin.dart'; // Import de la classe SignIn
+import 'package:flavorgen/services/auth_service.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({Key? key}) : super(key: key);
+  const ResetPasswordScreen({super.key});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  bool _obscureNewPassword = true;
-  bool _obscureConfirmPassword = true;
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final AuthService _authService = AuthService();
+  bool _isLoading = false;
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFF3E5481),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(10),
+      ),
+    );
+  }
+
+  Future<void> _resetPassword() async {
+    if (_emailController.text.isEmpty) {
+      _showSnackBar('Please enter your email address');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _authService.resetPassword(_emailController.text.trim());
+      _showSnackBar('A reset email has been sent to your address');
+
+      // Attendre un peu avant de revenir en arrière
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          Navigator.pop(context);
+        }
+      });
+    } catch (e) {
+      _showSnackBar('Error : ${e.toString()}');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF3E5481)),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 60),
-
-                // Reset your password text
-                const Text(
-                  'Reset your password',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2E3E5C),
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Reset Password',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3E5481),
                 ),
-
-                const SizedBox(height: 8),
-
-                // Please enter your email
-                const Text(
-                  'Please enter your email and new password',
-                  style: TextStyle(fontSize: 16, color: Color(0xFF9FA5C0)),
-                ),
-
-                const SizedBox(height: 40),
-
-                // Email field
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: const Color(0xFFD0DBEA)),
-                  ),
-                  child: TextField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      hintText: 'Email',
-                      hintStyle: TextStyle(color: Color(0xFF9FA5C0)),
-                      prefixIcon: Icon(
-                        Icons.email_outlined,
-                        color: Color(0xFF9FA5C0),
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 16),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Enter your email address to receive a reset link',
+                style: TextStyle(fontSize: 16, color: Color(0xFF9FA5C0)),
+              ),
+              const SizedBox(height: 32),
+              _buildTextField(
+                controller: _emailController,
+                hintText: 'Email',
+                icon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _resetPassword,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1FCC79),
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: const Color(
+                      0xFF1FCC79,
+                    ).withOpacity(0.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
+                    elevation: 0,
                   ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // New Password field
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: const Color(0xFFD0DBEA)),
-                  ),
-                  child: TextField(
-                    controller: _newPasswordController,
-                    obscureText: _obscureNewPassword,
-                    decoration: InputDecoration(
-                      hintText: 'New Password',
-                      hintStyle: const TextStyle(color: Color(0xFF9FA5C0)),
-                      prefixIcon: const Icon(
-                        Icons.lock_outline,
-                        color: Color(0xFF9FA5C0),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureNewPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: const Color(0xFF9FA5C0),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureNewPassword = !_obscureNewPassword;
-                          });
-                        },
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Confirm Password field
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: const Color(0xFFD0DBEA)),
-                  ),
-                  child: TextField(
-                    controller: _confirmPasswordController,
-                    obscureText: _obscureConfirmPassword,
-                    decoration: InputDecoration(
-                      hintText: 'Confirm Password',
-                      hintStyle: const TextStyle(color: Color(0xFF9FA5C0)),
-                      prefixIcon: const Icon(
-                        Icons.lock_outline,
-                        color: Color(0xFF9FA5C0),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: const Color(0xFF9FA5C0),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureConfirmPassword = !_obscureConfirmPassword;
-                          });
-                        },
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 40),
-
-                // Done button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_emailController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Veuillez entrer votre email'),
-                          ),
-                        );
-                        return;
-                      }
-
-                      if (_newPasswordController.text.isEmpty ||
-                          _confirmPasswordController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Veuillez remplir tous les champs'),
-                          ),
-                        );
-                        return;
-                      }
-
-                      if (_newPasswordController.text !=
-                          _confirmPasswordController.text) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Les mots de passe ne correspondent pas',
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : const Text(
+                            'Send Link',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        );
-                        return;
-                      }
-
-                      // Logique de réinitialisation du mot de passe
-                      try {
-                        // Appeler un service pour réinitialiser le mot de passe
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Mot de passe réinitialisé avec succès',
-                            ),
-                          ),
-                        );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => SignInPage()),
-                        );
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Erreur : ${e.toString()}')),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1FCC79),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Text(
-                      'Done',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+    Widget? suffixIcon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F8F9),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFD0DBEA)),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        style: const TextStyle(color: Color(0xFF3E5481)),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: const TextStyle(color: Color(0xFF9FA5C0)),
+          prefixIcon: Icon(icon, color: const Color(0xFF9FA5C0)),
+          suffixIcon: suffixIcon,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
         ),
       ),
     );

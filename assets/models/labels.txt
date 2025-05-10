@@ -1,0 +1,15 @@
+apple
+banana
+bell_pepper
+broccoli
+carrot
+chicken
+cucumber
+egg
+garlic
+lemon
+mushroom
+onion
+orange
+potato
+tomato

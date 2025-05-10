@@ -3,6 +3,8 @@ import 'package:flavorgen/screens/Authentification/signin.dart'; // Import de la
 
 // Dummy SignIn class for demonstration purposes
 class SignIn extends StatelessWidget {
+  const SignIn({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,7 +75,7 @@ class GetStartedPage extends StatelessWidget {
                     // Navigation vers la page SignIn
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => SignInPage()),
+                      MaterialPageRoute(builder: (context) => SignInScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(

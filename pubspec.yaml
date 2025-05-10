@@ -45,7 +45,20 @@ dependencies:
   camera: ^0.11.1
   flutter_svg: ^2.0.17
   path_provider: ^2.1.5
-  permission_handler: ^10.2.0
+  permission_handler: ^12.0.0+1
+  http: ^1.3.0
+  flutter_html: ^3.0.0
+  tflite_flutter: ^0.11.0
+  image: ^4.5.4
+  share_plus: ^11.0.0
+  url_launcher: ^6.3.1
+  app_links: ^6.4.0
+  country_flags: ^3.2.0
+  qr_flutter: ^4.1.0
+  otp: ^3.1.4
+  image_picker: ^1.1.2
+  country_picker: ^2.0.27
+  intl_phone_field: ^3.2.0
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +85,9 @@ flutter:
     - assets/images/logo.png
     - assets/images/Onboarding.png
     - assets/images/email.png
+    - assets/models/yolo11n_float16.tflite
+    - assets/models/labels.txt # (si tu utilises un fichier de labels)
+    - assets/langs/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
