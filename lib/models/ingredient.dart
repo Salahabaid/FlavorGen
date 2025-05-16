@@ -1,14 +1,14 @@
 class Ingredient {
   final int id;
   final String name;
-  final String? image;
   final double? confidence;
+  final List<double>? bbox; // [left, top, right, bottom]
 
   Ingredient({
     required this.id,
     required this.name,
-    this.image,
     this.confidence,
+    this.bbox, // <-- nouveau champ
   });
 
   factory Ingredient.fromJson(Map<String, dynamic> json) {
@@ -18,11 +18,13 @@ class Ingredient {
               ? json['id']
               : int.tryParse(json['id'].toString()) ?? 0,
       name: json['name'] ?? '',
-      image: json['image'],
       confidence:
           json['confidence'] != null
               ? (json['confidence'] as num).toDouble()
               : null,
+      bbox: json['bbox'] != null
+          ? List<double>.from(json['bbox'].map((x) => x.toDouble()))
+          : null,
     );
   }
 }

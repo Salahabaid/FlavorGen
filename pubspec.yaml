@@ -85,7 +85,7 @@ flutter:
     - assets/images/logo.png
     - assets/images/Onboarding.png
     - assets/images/email.png
-    - assets/models/yolo11n_float16.tflite
+    - assets/models/best_float16.tflite
     - assets/models/labels.txt # (si tu utilises un fichier de labels)
     - assets/langs/
 

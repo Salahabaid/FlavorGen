@@ -5,35 +5,30 @@
  * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
  *
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ * eslint-disable max-len
  */
-
-const {onRequest} = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
 admin.initializeApp();
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
-
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
-
-exports.notifyOnFavorite = functions.firestore
-    .document("favorites/{userId}/recipes/{recipeId}")
+exports.sendFavoritePush = functions.firestore
+    .document('favorites/{userId}/recipes/{recipeId}')
     .onCreate(async (snap, context) => {
       const userId = context.params.userId;
-      const userDoc = await admin.firestore().collection("users").doc(userId).get();
-      const fcmToken = userDoc.data().fcmToken;
-      if (!fcmToken) return null;
+      const userDoc = await admin.firestore().collection('users').doc(userId).get();
+      const userData = userDoc.data();
+      if (!userData || !userData.notif_push || !userData.fcmToken) return null;
 
+      const recipe = snap.data();
+      const message =
+      'La recette "' +
+      recipe.title +
+      '" a été ajoutée à vos favoris.';
       const payload = {
         notification: {
-          title: "Recette ajoutée aux favoris",
-          body: "Vous venez d'ajouter une recette à vos favoris.",
+          title: 'Favori ajouté',
+          body: message,
         },
       };
-      return admin.messaging().sendToDevice(fcmToken, payload);
+      return admin.messaging().sendToDevice(userData.fcmToken, payload);
     });

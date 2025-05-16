@@ -2,23 +2,39 @@ train: C:/Users/hp/Desktop/flavorgen/assets/models/train/images
 val: C:/Users/hp/Desktop/flavorgen/assets/models/valid/images
 test: C:/Users/hp/Desktop/flavorgen/assets/models/test/images
 
-nc: 15
+nc: 31
 names:
-  - apple
-  - banana
-  - bell_pepper
-  - broccoli
-  - carrot
-  - chicken
-  - cucumber
-  - egg
-  - garlic
-  - lemon
-  - mushroom
-  - onion
-  - orange
-  - potato
-  - tomato
+  0: Beef
+  1: Bread
+  2: Butter
+  3: Chicken_breast
+  4: Corn
+  5: Flour
+  6: Ham
+  7: Milk
+  8: Shrimp
+  9: Spinach
+  10: Strawberries
+  11: apple
+  12: banana
+  13: beetroot
+  14: bell_pepper
+  15: broccoli
+  16: carrot
+  17: cheese
+  18: chicken
+  19: cucumber
+  20: egg
+  21: garlic
+  22: lemon
+  23: mushroom
+  24: onion
+  25: orange
+  26: potato
+  27: rice
+  28: sugar
+  29: thon
+  30: tomato
 
 roboflow:
   workspace: flavorgen

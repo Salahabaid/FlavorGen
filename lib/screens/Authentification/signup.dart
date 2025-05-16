@@ -4,6 +4,7 @@ import 'package:flavorgen/screens/Authentification/signin.dart';
 import 'package:flavorgen/screens/Authentification/verificationcode.dart';
 import 'package:flavorgen/services/auth_service.dart';
 import 'package:flavorgen/screens/HomeScreen/homescreen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -71,6 +72,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
 
       if (user != null) {
+        // Ajoute l'email dans Firestore
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'email': user.email,
+        }, SetOptions(merge: true));
+
         await _authService.sendEmailVerification();
 
         if (mounted) {

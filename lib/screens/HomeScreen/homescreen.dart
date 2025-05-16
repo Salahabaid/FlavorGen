@@ -13,6 +13,10 @@ import 'package:flavorgen/screens/Camera/camerascreen.dart';
 import 'package:flavorgen/services/favorite_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flavorgen/screens/ProfileScreen/settings_screen.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flavorgen/services/yolo_service.dart';
+import 'dart:io';
+import 'package:image/image.dart' as img;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -348,6 +352,41 @@ class _HomeScreenState extends State<HomeScreen> {
     precacheImage(const AssetImage('assets/images/logo.png'), context);
   }
 
+  // Nouvelle méthode pour sélectionner une image depuis la galerie et détecter les ingrédients
+  Future<void> _pickImageFromGalleryDirect(BuildContext context) async {
+    final picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+    if (pickedFile != null) {
+      final bytes = await File(pickedFile.path).readAsBytes();
+      final image = img.decodeImage(bytes);
+      if (image != null) {
+        final detectedIngredients = await YoloService()
+            .detectIngredientsInImage(image);
+        if (detectedIngredients.isNotEmpty) {
+          setState(() {
+            _selectedIngredients.addAll(
+              detectedIngredients.where(
+                (i) => !_selectedIngredients.any((e) => e.id == i.id),
+              ),
+            );
+          });
+        }
+        // Affiche un message si rien n'est détecté
+        if (detectedIngredients.isEmpty && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Aucun ingrédient détecté. Essayez une autre image.',
+              ),
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget mainContent;
@@ -536,35 +575,15 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header affiché pour TOUS les onglets
+            // Nouveau header centré avec logo
             Padding(
-              padding: const EdgeInsets.only(
-                top: 16.0,
-                left: 16.0,
-                right: 16.0,
-                bottom: 8.0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      height: 60,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.notifications,
-                      color: Color(0xFF200E32),
-                      size: 28,
-                    ),
-                    onPressed: () {
-                      // Action notification
-                    },
-                  ),
-                ],
+              padding: const EdgeInsets.symmetric(vertical: 32.0),
+              child: Center(
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  height: 80,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
             // Switch Scan/Manual Entry UNIQUEMENT sur Home

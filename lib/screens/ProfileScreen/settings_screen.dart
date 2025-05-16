@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:country_flags/country_flags.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flavorgen/screens/Authentification/signin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -60,22 +59,6 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       );
                     },
-                  ),
-                  _SettingsTile(
-                    iconWidget: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: CountryFlag.fromCountryCode(
-                        'GB',
-                        height: 24,
-                        width: 32,
-                      ),
-                    ),
-                    text: 'English',
-                    trailing: const Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Color(0xFF9FA5C0),
-                    ),
-                    onTap: () {},
                   ),
                   _SettingsTile(
                     icon: Icons.logout,

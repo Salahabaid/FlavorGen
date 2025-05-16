@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "flavorgen-87838"
-  }
+    "default": "flavorgen-87838",
+    "staging": "pfaproject-255be"
+  },
+  "targets": {},
+  "etags": {}
 }

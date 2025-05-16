@@ -16,21 +16,37 @@ class YoloService {
   List<String> _labels = [];
 
   static final Map<String, int> ingredientIds = {
+    "beef": 23572,
+    "bread": 18064,
+    "butter": 1001,
+    "chicken_breast": 5062,
+    "corn": 11168,
+    "flour": 20081,
+    "ham": 10151,
+    "milk": 1077,
+    "shrimp": 15152,
+    "spinach": 10011457,
+    "strawberries": 9316,
     "apple": 9003,
-    "onion": 11282,
-    "tomato": 11529,
-    "garlic": 11215,
-    "carrot": 11124,
     "banana": 9040,
-    "chicken": 5006,
-    "egg": 1123,
-    "potato": 11352,
-    "mushroom": 11260,
-    "broccoli": 11090,
-    "cucumber": 11205,
-    "lemon": 9150,
-    "orange": 9200,
+    "beetroot": 11080,
     "bell_pepper": 11821,
+    "broccoli": 11090,
+    "carrot": 11124,
+    "cheese": 1041009,
+    "chicken": 5006,
+    "cucumber": 11205,
+    "egg": 1123,
+    "garlic": 11215,
+    "lemon": 9150,
+    "mushroom": 11260,
+    "onion": 11282,
+    "orange": 9200,
+    "potato": 11352,
+    "rice": 20444,
+    "sugar": 19335,
+    "thon": 10015121,
+    "tomato": 11529,
   };
 
   Future<void> initialize() async {
@@ -40,7 +56,9 @@ class YoloService {
       final labelsData = await rootBundle.loadString(
         'assets/models/labels.txt',
       );
-      _labels = labelsData.split('\n');
+      _labels =
+          labelsData.split('\n').map((e) => e.trim().toLowerCase()).toList();
+      print('Labels chargés: $_labels');
 
       final options =
           InterpreterOptions()
@@ -48,7 +66,7 @@ class YoloService {
             ..useNnApiForAndroid = true;
 
       _interpreter = await Interpreter.fromAsset(
-        'assets/models/yolo11n_float16.tflite',
+        'assets/models/best_float16.tflite', // <-- Mets ici le nom de ton modèle
         options: options,
       );
 
@@ -85,32 +103,42 @@ class YoloService {
   Future<List<Ingredient>> detectIngredientsInImage(img.Image image) async {
     if (!_isInitialized) {
       await initialize();
-      if (!_isInitialized) return [];
+      if (!_isInitialized) {
+        print("YoloService not initialized, returning empty list.");
+        return [];
+      }
     }
 
     try {
       final inputData = _preprocessImage(image);
       final inputShape = [1, 640, 640, 3];
-      final outputShape = [1, 8400, _labels.length + 5];
-
+      
       var outputTensor = List.generate(
         1,
-        (_) => List.generate(8400, (_) => List.filled(_labels.length + 5, 0.0)),
+        (_) => List.generate(35, (_) => List.filled(8400, 0.0)),
       );
 
+      print("Running interpreter...");
       _interpreter!.run(inputData.reshape(inputShape), outputTensor);
+      print("Interpreter run complete. Output tensor shape: [${outputTensor.length}, ${outputTensor[0].length}, ${outputTensor[0][0].length}]");
 
-      final detections = _postProcessOutput(outputTensor);
+      final List<Map<String, dynamic>> detections = _postProcessOutput(outputTensor);
       final List<Ingredient> detectedIngredients = [];
+
+      print("Post-processing returned ${detections.length} detections.");
 
       for (var detection in detections) {
         final labelIndex = detection['class_id'] as int;
-        final className = _labels[labelIndex].toLowerCase();
+        if (labelIndex < 0 || labelIndex >= _labels.length) {
+          print("Warning: Invalid labelIndex $labelIndex detected. Max is ${_labels.length -1}. Skipping.");
+          continue;
+        }
+        final className = _labels[labelIndex];
         final confidence = detection['confidence'] as double;
 
-        print('Détection: $className ($confidence)');
-
-        if (ingredientIds.containsKey(className) && confidence > 0.3) {
+        print('Processing detection: $className ($confidence)');
+        
+        if (ingredientIds.containsKey(className)) {
           final ingredientId = ingredientIds[className]!;
 
           if (!detectedIngredients.any((i) => i.id == ingredientId)) {
@@ -119,57 +147,89 @@ class YoloService {
                 id: ingredientId,
                 name: className,
                 confidence: confidence,
+                bbox: detection['bbox'] as List<double>,
               ),
             );
           }
+        } else {
+          print("Ingredient '$className' not found in ingredientIds map or confidence too low.");
         }
       }
 
+      print('Final detected ingredients in list: ${detectedIngredients.map((i) => i.name).toList()}');
       return detectedIngredients;
-    } catch (e) {
-      print('Erreur de détection: $e');
+    } catch (e, s) {
+      print('Erreur de détection in detectIngredientsInImage: $e');
+      print('Stack trace: $s');
       return [];
     }
   }
 
-  List<Map<String, dynamic>> _postProcessOutput(dynamic output) {
+  List<Map<String, dynamic>> _postProcessOutput(List<List<List<double>>> outputTensor) {
     final List<Map<String, dynamic>> results = [];
-    final outputData = output[0] as List<List<double>>;
+    
+    final List<List<double>> outputData = outputTensor[0];
 
-    const confidenceThreshold = 0.4;
-    const iouThreshold = 0.5;
+    final int numDetections = outputData[0].length;
+    final int numClasses = _labels.length;
 
-    for (var row in outputData) {
-      double maxScore = 0;
-      int classId = 0;
+    if (outputData.length != numClasses + 4) {
+      print("Warning: Output tensor attributes length (${outputData.length}) does not match numClasses ($numClasses) + 4.");
+    }
 
-      for (int i = 5; i < row.length; i++) {
-        if (row[i] > maxScore) {
-          maxScore = row[i];
-          classId = i - 5;
+    const double confidenceThreshold = 0.3;
+    const double iouThreshold = 0.5;
+
+    List<Map<String, dynamic>> allBoxes = [];
+
+    for (int i = 0; i < numDetections; i++) {
+      double maxClassScore = 0.0;
+      int bestClassId = -1;
+      String potentialLabel = "";
+
+      // Temporarily log the highest score found for this detection box i
+      double currentBoxMaxScore = 0.0; 
+
+      for (int classIdx = 0; classIdx < numClasses; classIdx++) {
+        final double score = outputData[4 + classIdx][i];
+        if (score > currentBoxMaxScore) { // Keep track of highest score in this box
+            currentBoxMaxScore = score;
+        }
+        if (score > maxClassScore) {
+          maxClassScore = score;
+          bestClassId = classIdx;
+          potentialLabel = _labels[classIdx]; // For logging
         }
       }
+      
+      // Log this for a few detections to see what scores look like
+      if (i < 10) { // Log for first 10 detection proposals
+          print("Detection proposal $i: Max score found = $currentBoxMaxScore (Best class if > thresh: $potentialLabel, ID: $bestClassId)");
+      }
 
-      if (maxScore > confidenceThreshold) {
-        final centerX = row[0];
-        final centerY = row[1];
-        final width = row[2];
-        final height = row[3];
+      if (maxClassScore > confidenceThreshold && bestClassId != -1) {
+        final double centerX = outputData[0][i] * 640;
+        final double centerY = outputData[1][i] * 640;
+        final double width = outputData[2][i] * 640;
+        final double height = outputData[3][i] * 640;
 
-        final left = centerX - width / 2;
-        final top = centerY - height / 2;
-        final right = centerX + width / 2;
-        final bottom = centerY + height / 2;
+        final double left = centerX - (width / 2);
+        final double top = centerY - (height / 2);
+        final double right = centerX + (width / 2);
+        final double bottom = centerY + (height / 2);
 
-        results.add({
-          'class_id': classId,
-          'confidence': maxScore,
+        allBoxes.add({
+          'class_id': bestClassId,
+          'confidence': maxClassScore,
           'bbox': [left, top, right, bottom],
         });
       }
     }
-
-    return _applyNMS(results, iouThreshold);
+    
+    print("Boxes before NMS: ${allBoxes.length}");
+    final nmsResults = _applyNMS(allBoxes, iouThreshold);
+    print("Boxes after NMS: ${nmsResults.length}");
+    return nmsResults;
   }
 
   List<Map<String, dynamic>> _applyNMS(

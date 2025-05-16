@@ -133,7 +133,8 @@ class ScanView extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: isLoading ? null : onScanPressed,
+              onPressed:
+                  isLoading ? null : onScanPressed,
               icon:
                   isLoading
                       ? Container(

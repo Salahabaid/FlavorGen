@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flavorgen/screens/Get Started/getstarted.dart'; // Import de GetStartedPage
-import 'package:camera/camera.dart'; // Import de la bibliothèque de caméra
+import 'package:flavorgen/screens/Get Started/getstarted.dart';
+import 'package:camera/camera.dart';
 import 'package:app_links/app_links.dart';
 import 'dart:async';
 import 'package:flavorgen/screens/Recipe/recipe_detail_screen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,11 +16,29 @@ void main() async {
   } catch (e) {
     debugPrint('Erreur lors de l\'initialisation de Firebase : $e');
   }
+  await _initFCM();
 
-  // Récupère les caméras disponibles
   final cameras = await availableCameras();
-
   runApp(MyApp(cameras: cameras));
+}
+
+Future<void> _initFCM() async {
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  await messaging.requestPermission();
+  String? token = await messaging.getToken();
+  print('FCM Token: $token');
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null && token != null) {
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+      'fcmToken': token,
+    }, SetOptions(merge: true));
+  }
+}
+
+// Obtenir et afficher le token FCM
+Future<void> printFcmToken() async {
+  String? token = await FirebaseMessaging.instance.getToken();
+  print("FCM Token: $token");
 }
 
 class MyApp extends StatefulWidget {
@@ -46,6 +67,17 @@ class MyAppState extends State<MyApp> {
 
     // Gère le lien initial (quand l'app démarre via un lien)
     _handleInitialLink();
+
+    // Écoute les notifications push reçues pendant l'utilisation de l'app
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      final notification = message.notification;
+      if (notification != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(notification.title ?? 'Notification reçue')),
+        );
+      }
+      print('Notification reçue: ${notification?.title}');
+    });
   }
 
   Future<void> _handleInitialLink() async {
@@ -86,7 +118,6 @@ class MyAppState extends State<MyApp> {
         _pendingInitialUri!.pathSegments.isNotEmpty &&
         _pendingInitialUri!.pathSegments[0] == 'recipes') {
       final recipeId = _pendingInitialUri!.pathSegments[1];
-      // On efface le pending pour éviter la boucle
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           _pendingInitialUri = null;

@@ -129,20 +129,19 @@ class _TwoFactorAuthScreenState extends State<TwoFactorAuthScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        title: const Text('Two-Factor Authentication'),
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Two-factor authentification',
-          style: TextStyle(color: Color(0xFF3E5481)),
-        ),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Color(0xFF3E5481)),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Image.asset('assets/images/logo.png', height: 48)),
+            const Text(
+              'Two-Factor Authentication',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 32),
             if (!_showQRCode && !_showTotpInput) ...[
               const Text(

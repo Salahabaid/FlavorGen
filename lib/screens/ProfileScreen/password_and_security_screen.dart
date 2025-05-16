@@ -10,30 +10,19 @@ class PasswordAndSecurityScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        title: Text('Password and security'),
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Password and security',
-          style: TextStyle(color: Color(0xFF3E5481)),
-        ),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Color(0xFF3E5481)),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Logo Flavor
-            Center(child: Image.asset('assets/images/logo.png', height: 48)),
-            const SizedBox(height: 32),
-            const Text(
+            const SizedBox(height: 24),
+            Text(
               'Password and security',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF3E5481),
-              ),
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
             const Text(

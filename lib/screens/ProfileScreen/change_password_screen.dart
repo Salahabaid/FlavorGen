@@ -95,34 +95,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        title: const Text('Change password'),
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Change password',
-          style: TextStyle(color: Color(0xFF3E5481)),
-        ),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Color(0xFF3E5481)),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Image.asset('assets/images/logo.png', height: 48)),
-            const SizedBox(height: 32),
             const Text(
-              'Change password',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF3E5481),
-              ),
+              'Create new password',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
               'Your password must be at least 6 characters and should include a combination of numbers, letters and special characters (!\$%).',
               style: TextStyle(fontSize: 14, color: Color(0xFF9FA5C0)),
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.left,
             ),
             const SizedBox(height: 32),
             _buildTextField(

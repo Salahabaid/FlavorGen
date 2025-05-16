@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flavorgen/screens/Authentification/signin.dart'; // Import de la classe SignIn
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 // Dummy SignIn class for demonstration purposes
 class SignIn extends StatelessWidget {
@@ -16,6 +17,11 @@ class SignIn extends StatelessWidget {
 
 class GetStartedPage extends StatelessWidget {
   const GetStartedPage({super.key});
+
+  Future<void> printFcmToken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    print('FCM Token: $token');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +105,9 @@ class GetStartedPage extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(height: 20),
+
+            // Supprimé : le bouton pour afficher le token FCM
             const SizedBox(height: 80),
           ],
         ),
